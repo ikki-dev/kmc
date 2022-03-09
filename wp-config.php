@@ -26,10 +26,10 @@ define( 'DB_NAME', 'kmc_db' );
 define( 'DB_USER', 'root' );
 
 /** MySQL database password */
-define( 'DB_PASSWORD', 'root' );
+define( 'DB_PASSWORD', 'z5KKc9YtKyAn' );
 
 /** MySQL hostname */
-define( 'DB_HOST', '127.0.0.1' );
+define( 'DB_HOST', 'localhost:3306' );
 
 /** Database Charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
@@ -97,3 +97,47 @@ define('WP_MEMORY_LIMIT', '1024M');
 define('FS_METHOD', 'direct');
 define('FS_CHMOD_DIR', 0770);
 define('FS_CHMOD_FILE', 0660);
+
+/**
+ * The WP_SITEURL and WP_HOME options are configured to access from any hostname or IP address.
+ * If you want to access only from an specific domain, you can modify them. For example:
+ *  define('WP_HOME','http://example.com');
+ *  define('WP_SITEURL','http://example.com');
+ *
+*/
+
+if ( defined( 'WP_CLI' ) ) {
+	$_SERVER['HTTP_HOST'] = 'localhost';
+}
+
+define('WP_SITEURL', 'http://' . $_SERVER['HTTP_HOST'] . '/');
+define('WP_HOME', 'http://' . $_SERVER['HTTP_HOST'] . '/');
+
+
+/** Absolute path to the WordPress directory. */
+if ( ! defined( 'ABSPATH' ) ) {
+define( 'ABSPATH', __DIR__ . '/' );
+}
+
+/** Sets up WordPress vars and included files. */
+require_once ABSPATH . 'wp-settings.php';
+
+define('WP_TEMP_DIR', '/opt/bitnami/apps/wordpress/tmp');
+
+
+//  Disable pingback.ping xmlrpc method to prevent Wordpress from participating in DDoS attacks
+//  More info at: https://docs.bitnami.com/general/apps/wordpress/troubleshooting/xmlrpc-and-pingback/
+
+if ( !defined( 'WP_CLI' ) ) {
+	// remove x-pingback HTTP header
+	add_filter('wp_headers', function($headers) {
+			unset($headers['X-Pingback']);
+			return $headers;
+	});
+	// disable pingbacks
+	add_filter( 'xmlrpc_methods', function( $methods ) {
+					unset( $methods['pingback.ping'] );
+					return $methods;
+	});
+	add_filter( 'auto_update_translation', '__return_false' );
+}
